@@ -2,8 +2,8 @@
 /*
     Plugin Name: XMLRPC Logger
     Plugin URI: https://example.com/xmlprc-logger
-    Description: Log incoming XMLRPC request
-    Version: 0.1a
+    Description: Log incoming XMLRPC requests.
+    Version: 0.0.2
     Author: Andras Marton
     Author URI: https://andrasmarton.com
     License: GPL 1.2
@@ -21,15 +21,16 @@ function amxml_get_user_ip() {
     return $ip;
 }
 
+/*
 function amxml_sanitize($xml_body) {
-    $search = "/(.*<data><value><string>)(.*)(<\/string><\/value><value><string>)(.*)(<\/string><\/value>.*)/s";
+    $search = "/(.*<data><value><string>)(.*)(<\/string><\/value><value><string>)(.*)(<\/string><\/value>.*)/";
     $replace_user = "SANITIZED_USERNAME";
     $replace_pass = "SANITIZED_PASSWORD";
     $string = $xml_body;
 
     return preg_replace($search, '$1'.$replace_user.'$3'.$replace_pass.'$5', $string);
 }
-    
+ */
 
 // Grab the xmlrpc.php request body
 function amxml_log_xmlrpc_request() {
@@ -38,13 +39,21 @@ function amxml_log_xmlrpc_request() {
         if ( defined( 'XMLRPC_REQUEST' ) ) {
             // Retrieve the IP address returned from the function
             $ip = amxml_get_user_ip();
-            $raw_xml = preg_replace('/[\r\n]+/', "", file_get_contents("php://input"));
-            $sanitized_xml = amxml_sanitize($raw_xml);
+            /*
+            $input_to_sanitize = preg_replace('/[\r\n]+/', "", file_get_contents("php://input"));
+            $pattern_sanitize = '/(.*<data><value><string>)(.*)(<\/string><\/value><value><string>)(.*)(<\/string><\/value>.*)/';
+            $sanitized_xml = preg_replace_callback($pattern_sanitize, 'amxml_sanitize_data', $input_to_sanitize);
+ */
+            //$xml_raw = file_get_contents("php://input");
+            $xml_string = new SimpleXMLElement(file_get_contents("php://input"));
+            $xml_data = $xml_string->asXML();
+            $xml_output = $xml_data->params->param->value->array->data->value->struct->member->value->array->data->value->array->data->string;
 
             // Gather the raw data from the request
             $logentry = "[" . date('D M H:i:s Y') . "] [XMLRPC Request Data] ";
             $logentry .= "[" . $ip . "] ";
-            $logentry .=  $sanitized_xml;
+            $logentry .= $xml_output;
+            //$logentry .= $xml_raw;
             /*$logentry .= $raw_xml;*/
 
             // File location

@@ -1,4 +1,8 @@
 # Changelog
+## [ 0.0.2 ] - 11-16-2021
+### Updated
+- Updated header information in the main file.
+- Updated `README.md`
 ## [ 0.0.2 ] - 10-10-2021
 ### Added
 - Function to sanitize username and password. This is still a work in progress where multiple username and passwords are provided within a single request
