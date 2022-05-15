@@ -1,7 +1,7 @@
 <?php
 /*
     Plugin Name: XMLRPC Logger
-    Plugin URI: https://example.com/xmlprc-logger
+    Plugin URI: https://github.com/am401/xmlrpc-logger
     Description: Log incoming XMLRPC requests.
     Version: 0.0.2
     Author: Andras Marton
@@ -22,7 +22,7 @@ function amxml_get_user_ip() {
 }
 
 // Grab the xmlrpc.php request body
-function xl_log_xmlrpc_request() {
+function amxl_log_xmlrpc_request() {
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if ( defined( 'XMLRPC_REQUEST' ) ) {
