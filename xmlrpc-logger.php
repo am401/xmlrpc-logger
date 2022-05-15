@@ -3,44 +3,67 @@
     Plugin Name: XMLRPC Logger
     Plugin URI: https://github.com/am401/xmlrpc-logger
     Description: Log incoming XMLRPC requests.
-    Version: 0.0.2
+    Version: 0.0.3
     Author: Andras Marton
     Author URI: https://andrasmarton.com
     License: GPL 1.2
 */
 
-// Gather IP address from requester
-function amxml_get_user_ip() {
-    if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
-        $ip = $_SERVER['HTTP_CLIENT_IP'];
-    } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-        $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
-    } else {
-        $ip = $_SERVER['REMOTE_ADDR'];
-    }
-    return $ip;
+// Exit if this file is called directly
+if ( ! defined( 'ABSPATH' ) ) {
+    exit;
 }
 
-// Grab the xmlrpc.php request body
-function amxl_log_xmlrpc_request() {
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+define("XMLRPC_ATTEMPT_LOG", true);
 
-        if ( defined( 'XMLRPC_REQUEST' ) ) {
-            // Retrieve the IP address returned from the function
-            $ip = xl_get_user_ip();
+$amxml_settings = array(
+    "plugin_name" => "XMLRPC Logger",
+    "plugin_url" => "xmlrpc-logger",
+    "plugin_version" => "0.1",
+    "plugin_db_version" => "1.0",
+    "plugin_table_name" => "{$wpdb->prefix}xmlrpc_logs",
+);
 
-            // Gather the raw data from the request
-            $logentry = "[" . date('D M H:i:s Y') . "] [XMLRPC Request Data] ";
-            $logentry .= "[" . $ip . "] ";
-            $logentry .= preg_replace('/[\r\n]+/', "", file_get_contents("php://input"));
+require_once("amxml-log-init.php");
 
-            // File location
-            $logfile = ABSPATH.'/wp-content/xmlrpc-request.log';
+register_activation_hook(__FILE__, "amxml_install");
+register_deactivation_hook(__FILE__, 'amxml_uninstall');
 
-            // Save to file
-            @file_put_contents($logfile, $logentry.PHP_EOL, FILE_APPEND | LOCK_EX);
-        }
-    }
+function amxml_install()
+{
+        global $wpdb, $amxml_settings;
+
+        $table_name = $wpdb->prefix."xmlrpc_logs";
+
+        $sql = <<<SQL
+CREATE TABLE $table_name (
+  `id`        mediumint(9)    NOT NULL AUTO_INCREMENT,
+  `time`      datetime        DEFAULT '0000-00-00 00:00:00' NOT NULL,
+  `ip`        varchar(255)    NOT NULL,
+  `data`      longtext        NOT NULL,
+  `agent`     varchar(255)    NOT NULL,
+  `host`      varchar(255)    DEFAULT NULL,
+  UNIQUE KEY  `id`            (`id`),
+  KEY         `time`          (`time`),
+  KEY         `ip`            (`ip`(255)),
+  KEY         `agent`         (`agent`(255))
+);
+SQL;
+
+        require_once(ABSPATH.'wp-admin/includes/upgrade.php');
+        dbDelta($sql);
+
+        add_option("amxml_db_version", $amxml_settings['plugin_db_version']);
 }
-add_action('init', 'amxml_log_xmlrpc_request');
+
+function amxml_uninstall()
+{
+        global $wpdb, $amxml_settings;
+
+        $table_name = $wpdb->prefix."xmlrpc_logs";
+
+        $wpdb->get_results("DROP TABLE $table_name;");
+
+        add_option("amxml_db_version", $amxml_settings['plugin_db_version']);
+}
 ?>
