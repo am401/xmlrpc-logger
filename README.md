@@ -2,15 +2,21 @@
 
 A simple WordPress plugin to log raw data sent as part of a POST request to a WordPress site's `xmlrpc.php` file.
 
-# Usage
+## Why?
+The XML-RPC interface of WordPress is a great way to your site to be remotely managed. However, more often than not, you will not be utilizing this end point. Yet this end point leaves your site vulnerable to password brute force attacks, where an attacker tries a username and password combination.
+
+This plugin can help identify what exactly is happening when external parties are interacting with your `xmlrpc.php` file as it captures the RAW input data sent to the end point. This can confirm whether a password attack or another attack method is being utilized against your site.
+
+## Usage
 The plugin is in the early stages of development and therefore it has limited functionality. At this time the primary options are to enable or disable. When enabled, it will log unfiltered XML data sent to the WordPres site it is running on via the XMLRPC file.
 
-The plugin will write data to the `/wp-content/xmlrpc-request.log` file and will log the raw data, a timestamp and the IP of the requester.
+## Data recorded
+The plugin currently records the following information:
+* Date and time stamp from when the request is being logged
+* IP Address of the user interacting with the end point
+* The raw data that was sent to the end point
+* The user's User Agent information
 
-# TODO
-
-- [ ] Create a settings page within the WordPress Admin Dashboard
-- [ ] Set the default behavior to filter out invalid XML
-- [ ] Create a setting to sanitize the XML data to remove username/passwords
-- [ ] By default do not log IP address of client
-- [ ] Create necessary settings for the above three options within the WordPress Admin Dashboard
+## Installation
+* Simply copy the files from the `src` directory to `wp-content-plugins/xmlrpc-logger`. 
+* Navigate to the WordPress Admin Dashboard > Plugins and activate the **XMLRPC-Logger** plugin
